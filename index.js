@@ -1,57 +1,35 @@
 const express = require("express");
 const cors = require("cors");
-const session = require("express-session");
 const dotenv = require("dotenv");
 const db = require("./config/database.js");
-const SequelizeStore = require("connect-session-sequelize")(session.Store);
 
 dotenv.config();
 
 const app = express();
 
-// Configuración del almacenamiento de sesiones
-const sessionStore = new SequelizeStore({
-    db: db,
-    tableName: 'sessions' // Configura el nombre de la tabla si lo deseas
-});
-
 (async () => {
     try {
         await db.sync();
-        await sessionStore.sync(); // Asegúrate de sincronizar el almacenamiento de sesiones
         console.log("All models were synchronized successfully.");
     } catch (error) {
         console.error("Error synchronizing the models:", error);
     }
 })();
-console.log("Environment:", process.env.NODE_ENV);
-app.use(session({
-    secret: process.env.SECRET_SESSION,
-    resave: false,
-    saveUninitialized: false,
-    store: sessionStore,
-    cookie: {
-        secure: false, // Cookies seguras solo en producción
-        httpOnly: false, // No accesible desde el frontend
-        sameSite: 'None', // Necesario para cookies cross-site
-        maxAge: 24 * 60 * 60 * 1000 // 1 día de duración para la cookie
-    }
-}));
 
+console.log("Environment:", process.env.NODE_ENV);
 
 app.use(cors({
-    origin: 'https://frontendclinica.madresegura.co',
+    origin: 'http://localhost:3000',
     credentials: true 
 }));
 
 app.use(express.json());
 
 // Usar las rutas
-app.use(require("./routes/UserRoute.js"));
-app.use(require("./routes/PacienteRoute.js"));
-app.use(require("./routes/AuthRoute.js"));
-app.use(require("./routes/HistoriaClinicaRoute.js"));
-app.use(require("./routes/PaisRoute.js"));
+app.use(require("./routes/ruta-usuario.js"));
+app.use(require("./routes/ruta-paciente.js"));
+app.use(require("./routes/ruta-autenticacion.js"));
+app.use(require("./routes/ruta-historia-clinica.js"));
 
 // Manejo de errores
 app.use((req, res, next) => {
